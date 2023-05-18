@@ -1,10 +1,18 @@
 import javafx.application.Application;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
-import javafx.scene.layout.BorderPane;
+import javafx.scene.control.Label;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
+import javafx.scene.layout.*;
+import javafx.scene.text.Font;
+import javafx.scene.text.FontWeight;
 import javafx.stage.Stage;
+
+
 
 
 public class Main extends Application {
@@ -14,15 +22,30 @@ public class Main extends Application {
     @Override
     public void start(Stage primaryStage) throws Exception {
         initialStage = primaryStage;
+        RegisterPage.getRegisterStage().showAndWait();
         BorderPane root = new BorderPane();
+        root.setPrefSize(1250,950);
+        root.setBackground(new Background(new BackgroundImage(new Image("backgrounds/background1.jpg")
+                ,BackgroundRepeat.NO_REPEAT,BackgroundRepeat.NO_REPEAT,BackgroundPosition.CENTER,
+                new BackgroundSize(BackgroundSize.AUTO,BackgroundSize.AUTO,
+                        false,false,true,true))));
+
         ObservableList<Food> foods= getFoods();
 
+        ObservableList<VBox> foodBoxes = getFoodBoxes(foods);
 
-        Button button = new Button("Click");
-        root.setCenter(button);
-        button.setOnAction(e->{
-            new FoodStage(foods.get(0));
-        });
+        HBox centerFoodBox = new HBox();
+        centerFoodBox.setSpacing(10);
+        centerFoodBox.setAlignment(Pos.CENTER);
+        centerFoodBox.getChildren().addAll(foodBoxes);
+
+        root.setCenter(centerFoodBox);
+
+
+
+
+
+
 
         Scene scene = new Scene(root,1250,950);
         primaryStage.setTitle("Foods");
@@ -30,6 +53,60 @@ public class Main extends Application {
         primaryStage.show();
 
 
+
+    }
+
+    @Override
+    public void stop() throws Exception {
+        SurveyPage.getSurveyPage().showAndWait();
+    }
+
+    private ObservableList<VBox> getFoodBoxes(ObservableList<Food> foods) {
+        VBox chocolateBox = new VBox();
+        VBox mushroomBox = new VBox();
+        VBox orangeBox = new VBox();
+        VBox meatBox = new VBox();
+
+        for(Food food : foods){
+            ImageView imageView=null;
+            try {
+                imageView = new ImageView(food.imageView.getImage());
+                imageView.setFitWidth(300);
+                imageView.setFitHeight(200);
+            }catch (Exception e){
+                e.printStackTrace();
+            }
+
+            Label label = new Label(food.name);
+            label.setFont(Font.font("Arial", FontWeight.BOLD,24));
+            Button showButton = new Button("Show Information");
+            showButton.setMinWidth(200);
+            showButton.setOnAction(e-> new FoodStage(food));
+            VBox vBox = null;
+
+            try{
+                vBox = new VBox(imageView,label,showButton);
+                vBox.setAlignment(Pos.CENTER);
+                vBox.setSpacing(10);
+            }catch (Exception e){
+                System.out.println(e.getMessage());
+            }
+
+            if(vBox!=null){
+
+                if(food instanceof Mushroom){
+                    mushroomBox=vBox;
+                } else if (food instanceof Chocolate) {
+                    chocolateBox=vBox;
+                } else if (food instanceof Meat) {
+                    meatBox=vBox;
+                } else if (food instanceof Orange) {
+                    orangeBox=vBox;
+                }
+
+            }
+        }
+        return FXCollections.observableArrayList(chocolateBox,orangeBox,mushroomBox,meatBox);
     }
 
     private ObservableList<Food> getFoods(){
